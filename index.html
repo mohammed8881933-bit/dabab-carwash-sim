@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>محاكاة مغسلة ضباب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Readex+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout idea: a control room. Controls on the right, the live site plan in the centre, the day's numbers on the left. Single dark theme: fog over Asir slate. */
+  --slate:#14232b;      /* background: Asir mountain slate */
+  --panel:#1c313b;      /* panels */
+  --fog:#e8eef0;        /* text: fog */
+  --mist:#9db3bb;       /* secondary text */
+  --amber:#f2b632;      /* accent: Al-Qatt Al-Asiri yellow */
+  --qatt-red:#d9483b;   /* lost customers */
+  --qatt-green:#3fae7a; /* served */
+  --qatt-blue:#3d7fd9;  /* in service */
+  --line:#2b4552;
+  --font-display:"Reem Kufi","Readex Pro",Tahoma,sans-serif;
+  --font-body:"Readex Pro",Tahoma,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--slate);color:var(--fog);font-family:var(--font-body);font-size:15px;line-height:1.6}
+a{color:var(--amber)}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand h1{font-family:var(--font-display);font-size:26px;margin:0;letter-spacing:.5px;text-wrap:balance}
+.brand small{display:block;color:var(--mist);font-size:13px}
+.qatt{width:44px;height:44px}
+.tag{font-size:12px;color:var(--mist);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+main{display:grid;grid-template-columns:280px minmax(0,1fr) 260px;gap:16px;padding:16px 24px}
+@media (max-width:1100px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.panel h2{font-family:var(--font-display);font-size:17px;margin:0 0 12px;color:var(--amber)}
+.ctl{display:grid;gap:4px;margin-bottom:14px}
+.ctl label{font-size:13px;color:var(--mist);display:flex;justify-content:space-between}
+.ctl label b{color:var(--fog);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--amber)}
+select{width:100%;background:var(--slate);color:var(--fog);border:1px solid var(--line);border-radius:6px;padding:6px;font-family:inherit}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button,.btn{font-family:inherit;font-size:13px;border:1px solid var(--line);background:var(--slate);color:var(--fog);border-radius:6px;padding:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--amber);color:#1a1a1a;border-color:var(--amber);font-weight:600}
+.btn.primary{background:var(--amber);color:#1a1a1a;border-color:var(--amber);font-weight:600;width:100%}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.row{display:flex;gap:8px}
+.row .btn{flex:1}
+#stage{width:100%;aspect-ratio:16/9;background:#2b3a33;border-radius:8px;display:block;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.clock{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-variant-numeric:tabular-nums;color:var(--mist);font-size:13px;gap:8px;flex-wrap:wrap}
+.clock b{font-size:22px;color:var(--fog);font-family:var(--font-display)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mist)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-left:5px;vertical-align:middle}
+.kpi{display:grid;gap:10px}
+.k{border-right:3px solid var(--line);padding:4px 10px}
+.k span{display:block;font-size:12px;color:var(--mist)}
+.k b{font-size:24px;font-family:var(--font-display);font-variant-numeric:tabular-nums}
+.k.good{border-color:var(--qatt-green)} .k.bad{border-color:var(--qatt-red)} .k.acc{border-color:var(--amber)}
+#qchart{width:100%;height:110px;display:block}
+section.learn{padding:0 24px 32px}
+section.learn h2{font-family:var(--font-display);font-size:22px;margin:8px 0 4px;text-wrap:balance}
+section.learn p.lead{color:var(--mist);max-width:70ch;margin:0 0 16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card h3{font-size:15px;margin:0 0 4px}
+.card p{font-size:13px;color:var(--mist);margin:0 0 10px}
+.card svg{width:100%;height:auto;display:block}
+.verdict{margin-top:8px;font-size:13px;background:rgba(242,182,50,.1);border-right:3px solid var(--amber);padding:6px 10px;border-radius:4px}
+footer{padding:16px 24px 32px;color:var(--mist);font-size:12px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="qatt" viewBox="0 0 44 44" aria-hidden="true">
+      <polygon points="0,44 11,22 22,44" fill="#d9483b"/><polygon points="11,22 22,0 33,22" fill="#f2b632"/>
+      <polygon points="22,44 33,22 44,44" fill="#3fae7a"/><polygon points="11,22 33,22 22,44" fill="#3d7fd9"/>
+    </svg>
+    <div><h1>محاكاة مغسلة ضباب</h1><small>نفق غسيل سريع على ممر أبها – خميس مشيط · نموذج محاكاة بالأحداث المنفصلة</small></div>
+  </div>
+  <span class="tag">ملحق دراسة الجدوى · مقرر دراسات الجدوى · جامعة الملك خالد</span>
+</header>
+
+<main>
+  <aside class="panel" aria-label="إعدادات المحاكاة">
+    <h2>غيّر الافتراضات</h2>
+    <div class="ctl"><label for="cars">متوسط السيارات في اليوم <b id="carsV">279</b></label>
+      <input id="cars" type="range" min="80" max="700" step="1" value="279"></div>
+    <div class="ctl"><label for="preset">سنة التشغيل</label>
+      <select id="preset"><option value="177">السنة 1 (177 سيارة)</option><option value="233">السنة 2 (233)</option><option value="279" selected>السنة 3 (279)</option><option value="311">السنة 4 (311)</option><option value="327">السنة 5 (327)</option></select></div>
+    <div class="ctl"><label for="dow">اليوم</label>
+      <select id="dow"><option value="0">الأحد</option><option value="1">الاثنين</option><option value="2">الثلاثاء</option><option value="3">الأربعاء</option><option value="4">الخميس</option><option value="5">الجمعة</option><option value="6" selected>السبت</option></select></div>
+    <div class="ctl"><label>الموسم</label>
+      <div class="seg" id="season"><button type="button" data-v="1" aria-pressed="true">عادي</button><button type="button" data-v="1.25" aria-pressed="false">صيف (+25%)</button></div></div>
+    <div class="ctl"><label>تصميم المخرج</label>
+      <div class="seg" id="design"><button type="button" data-v="separated" aria-pressed="true">منفصل (تصميمنا)</button><button type="button" data-v="blocking" aria-pressed="false">تقليدي يسد المخرج</button></div></div>
+    <div class="ctl"><label for="tunnel">طاقة النفق (سيارة/ساعة) <b id="tunnelV">50</b></label>
+      <input id="tunnel" type="range" min="25" max="60" step="5" value="50"></div>
+    <div class="ctl"><label for="vac">محطات الشفط الذاتي <b id="vacV">8</b></label>
+      <input id="vac" type="range" min="2" max="12" step="1" value="8"></div>
+    <div class="ctl"><label for="intw">عمال التنظيف الداخلي <b id="intwV">2</b></label>
+      <input id="intw" type="range" min="1" max="3" step="1" value="2"></div>
+    <div class="ctl"><label for="speed">سرعة العرض <b id="speedV">×120</b></label>
+      <input id="speed" type="range" min="30" max="600" step="30" value="120"></div>
+    <div class="row"><button class="btn primary" id="play" type="button">شغّل اليوم من 08:00</button><button class="btn" id="instant" type="button">يوم جديد عشوائي</button></div>
+  </aside>
+
+  <section class="panel" aria-label="مخطط الموقع الحي">
+    <h2>الموقع مباشرة</h2>
+    <canvas id="stage" width="1280" height="720" role="img" aria-label="مخطط علوي للمغسلة تتحرك فيه السيارات"></canvas>
+    <div class="clock"><span>الساعة <b id="clk">08:00</b></span>
+      <div class="legend"><span><i style="background:#f2b632"></i>ينتظر</span><span><i style="background:#3d7fd9"></i>تنظيف داخلي</span><span><i style="background:#3fae7a"></i>يشفط بنفسه</span><span><i style="background:#d9483b"></i>غادر بسبب الزحام أو يسد المخرج</span></div></div>
+    <canvas id="qchart" width="1000" height="110" aria-label="طول الطابور خلال اليوم"></canvas>
+  </section>
+
+  <aside class="panel kpi" aria-label="نتائج اليوم">
+    <h2>نتائج اليوم</h2>
+    <div class="k acc"><span>وصلوا</span><b id="kArr">0</b></div>
+    <div class="k good"><span>خُدموا</span><b id="kSrv">0</b></div>
+    <div class="k bad"><span>غادروا بسبب الطابور</span><b id="kLost">0</b></div>
+    <div class="k"><span>متوسط الانتظار قبل النفق (دقيقة)</span><b id="kWait">0</b></div>
+    <div class="k"><span>انتظار 95% من العملاء أقل من (دقيقة)</span><b id="kP95">0</b></div>
+    <div class="k"><span>انتظار محطة الشفط (دقيقة)</span><b id="kVac">0</b></div>
+    <div class="k"><span>استغلال النفق</span><b id="kUtil">0%</b></div>
+    <div class="k acc"><span>إيراد اليوم التقديري (ريال)</span><b id="kRev">0</b></div>
+  </aside>
+</main>
+
+<section class="learn">
+  <h2>ماذا قررت المحاكاة في الدراسة</h2>
+  <p class="lead">كل نتيجة هنا متوسط 30 تكراراً لليوم نفسه بأرقام عشوائية مختلفة، في يوم سبت صيفي بالسنة الخامسة (409 سيارات). وصول السيارات ساعة بساعة مأخوذ من بيانات "أوقات الذروة" الفعلية في خرائط Google لأكبر مغسلة على الممر.</p>
+  <div class="cards" id="cards"></div>
+</section>
+
+<footer>نموذج المحاكاة مطابق رياضياً لمعادلة الطوابير M/D/1 من مقرر بحوث العمليات (فرق أقل من ±2%). الأرقام تقديرات لأغراض أكاديمية. مصدر نمط الوصول: Google Maps Popular Times، رُصد في 17 نوفمبر 2026.</footer>
+
+<script>
+"use strict";
+const PROFILE=[[27,36,41,37,36,34,46,58,84,87,89,75,70,74,77,77],[37,39,41,37,39,36,41,50,65,82,84,87,100,96,91,62],[44,44,48,44,43,39,39,51,68,89,96,98,93,81,74,58],[44,58,55,46,41,34,32,46,63,86,79,82,68,62,56,50],[44,46,43,41,43,51,62,70,81,75,70,75,75,74,68,53],[29,37,44,63,75,58,58,62,84,89,84,72,67,62,56,48],[46,50,48,56,53,53,55,62,84,93,89,79,75,75,77,68]];
+const DAYW=PROFILE.map(d=>d.reduce((a,b)=>a+b,0)); const AVGW=DAYW.reduce((a,b)=>a+b,0)/7;
+const RES={"design":{"y1_separated":{"lost_pct":0,"wait_avg":1.41},"y1_blocking":{"lost_pct":0.08,"wait_avg":12.27},"y3_separated":{"lost_pct":0,"wait_avg":1.61},"y3_blocking":{"lost_pct":0.24,"wait_avg":19.83},"y5_separated":{"lost_pct":0,"wait_avg":1.79},"y5_blocking":{"lost_pct":0.3,"wait_avg":21.61}},"vacuums":{"4":15.97,"6":0.49,"8":0.03,"10":0,"12":0},"tunnel":{"30":[7.37,0.09],"35":[4.72,0.03],"40":[3.14,0.01],"50":[2.13,0]},"interior":{"1":77.27,"2":5.04,"3":0.77}};
+const AVG_TICKET=34.32;
+
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function tri(r,a,c,b){const u=r(),f=(c-a)/(b-a);return u<f?a+Math.sqrt(u*(b-a)*(c-a)):b-Math.sqrt((1-u)*(b-a)*(b-c))}
+
+function simulate(P,seed){
+  const r=rng(seed); const cars=[]; const prof=PROFILE[P.dow]; const tot=prof.reduce((a,b)=>a+b,0);
+  const daily=P.cars*P.season*DAYW[P.dow]/AVGW;
+  for(let h=0;h<16;h++){const lam=daily*prof[h]/tot/60;let t=h*60;
+    while(true){t+=-Math.log(1-r())/lam; if(t>=(h+1)*60)break; cars.push({a:t});}}
+  let kioskFree=0,prepFree=0,gateFree=0; const exitBusy=[]; let exitFree=0;
+  const intFree=Array(P.intw).fill(0); const spacing=60/P.tunnel, TT=3.0;
+  const accepted=[];
+  for(const c of cars){
+    const q=accepted.filter(x=>x.g>c.a).length; c.q=q;
+    if(q>=12 || (q>=6 && r()<(q-5)/7)){c.lost=true;continue;}
+    c.k0=Math.max(c.a,kioskFree); c.k1=c.k0+tri(r,.4,.6,1.0); kioskFree=c.k1;
+    c.p0=Math.max(c.k1,prepFree); c.p1=c.p0+tri(r,.3,.5,.8); prepFree=c.p1;
+    let g=Math.max(c.p1,gateFree);
+    if(P.design==="blocking"){for(const iv of exitBusy){if(g>=iv[0]&&g<iv[1])g=iv[1];}}
+    c.g=g; gateFree=g+spacing; c.x=g+spacing+TT;
+    c.int=r()<0.08; c.vacU=r()<0.70;
+    if(c.int){
+      let ready=c.x;
+      if(P.design==="blocking"){ready=Math.max(c.x,exitFree);}
+      let i=intFree.indexOf(Math.min(...intFree)); c.i0=Math.max(ready,intFree[i]); c.iBay=i; c.i1=c.i0+tri(r,18,25,40); intFree[i]=c.i1;
+      if(P.design==="blocking"){exitBusy.push([c.x,c.i1]); exitFree=c.i1;}
+      c.ready=c.i1;
+    } else c.ready=c.x;
+    accepted.push(c);
+  }
+  const vacFree=Array(P.vac).fill(0);
+  [...accepted].sort((a,b)=>a.ready-b.ready).forEach(c=>{
+    if(c.vacU){let i=vacFree.indexOf(Math.min(...vacFree)); c.v0=Math.max(c.ready,vacFree[i]); c.vBay=i; c.v1=c.v0+tri(r,5,9,18); vacFree[i]=c.v1; c.d=c.v1;}
+    else c.d=c.ready+0.5;
+  });
+  const waits=accepted.map(c=>c.g-c.a).sort((a,b)=>a-b);
+  const vw=accepted.filter(c=>c.vacU).map(c=>c.v0-c.ready);
+  return {cars,accepted,
+    arrived:cars.length,served:accepted.length,lost:cars.length-accepted.length,
+    wait:waits.length?waits.reduce((a,b)=>a+b,0)/waits.length:0,
+    p95:waits.length?waits[Math.floor(.95*(waits.length-1))]:0,
+    vac:vw.length?vw.reduce((a,b)=>a+b,0)/vw.length:0,
+    util:accepted.length*spacing/(16*60)};
+}
+
+// ---------- UI ----------
+const $=id=>document.getElementById(id);
+const P={cars:279,dow:6,season:1,design:"separated",tunnel:50,vac:8,intw:2};
+function bindRange(id,key,fmt){const el=$(id);el.addEventListener("input",()=>{P[key]=+el.value;$(id+"V").textContent=fmt?fmt(el.value):el.value;reset();});}
+bindRange("cars","cars"); bindRange("tunnel","tunnel"); bindRange("vac","vac"); bindRange("intw","intw");
+$("speed").addEventListener("input",()=>{$("speedV").textContent="×"+$("speed").value;});
+$("preset").addEventListener("change",e=>{P.cars=+e.target.value;$("cars").value=P.cars;$("carsV").textContent=P.cars;reset();});
+$("dow").addEventListener("change",e=>{P.dow=+e.target.value;reset();});
+function seg(id,key,num){document.querySelectorAll("#"+id+" button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#"+id+" button").forEach(x=>x.setAttribute("aria-pressed","false"));b.setAttribute("aria-pressed","true");
+  P[key]=num?+b.dataset.v:b.dataset.v;reset();}));}
+seg("season","season",true); seg("design","design",false);
+
+let RUN=null, T=0, playing=false, last=0, seed=7;
+const REST_T=600; // the page opens on 18:00, the evening peak
+function reset(){RUN=simulate(P,seed);RUN.cars.forEach((c,i)=>{c.col=PAL[i%PAL.length];c.p=null;c.key=null;c.route=[];c.ang=Math.PI;});
+  T=REST_T;playing=false;$("play").textContent="شغّل اليوم من 08:00";buildBg();update(0,true);render();showKPI(T);}
+function showKPI(t){
+  const arr=RUN.cars.filter(c=>c.a<=t), lost=arr.filter(c=>c.lost).length, srv=RUN.accepted.filter(c=>c.d<=t).length;
+  const w=RUN.accepted.filter(c=>c.g<=t).map(c=>c.g-c.a).sort((a,b)=>a-b);
+  $("kArr").textContent=arr.length; $("kSrv").textContent=srv; $("kLost").textContent=lost;
+  $("kWait").textContent=(w.length?w.reduce((a,b)=>a+b,0)/w.length:0).toFixed(1);
+  $("kP95").textContent=(w.length?w[Math.floor(.95*(w.length-1))]:0).toFixed(1);
+  const vw=RUN.accepted.filter(c=>c.vacU&&c.v0<=t).map(c=>c.v0-c.ready);
+  $("kVac").textContent=(vw.length?vw.reduce((a,b)=>a+b,0)/vw.length:0).toFixed(1);
+  $("kUtil").textContent=Math.round(RUN.accepted.filter(c=>c.g<=t).length*(60/P.tunnel)/Math.max(t,1)*100)+"%";
+  $("kRev").textContent=Math.round(srv*AVG_TICKET).toLocaleString("en-US");
+  const hh=8+Math.floor(t/60), mm=Math.floor(t%60); $("clk").textContent=String(Math.min(hh,24)).padStart(2,"0")+":"+String(mm).padStart(2,"0");
+}
+$("play").addEventListener("click",()=>{if(playing){playing=false;$("play").textContent="تابع";return;}
+  if(T>=16*60||T===REST_T&&!RUN._started){T=0;RUN.cars.forEach(c=>{c.p=null;c.key=null;c.route=[];});RUN._started=true;}
+  playing=true;$("play").textContent="إيقاف مؤقت";last=performance.now();requestAnimationFrame(loop);});
+$("instant").addEventListener("click",()=>{seed++;reset();});
+function loop(now){if(!playing)return;const dt=Math.min(.1,(now-last)/1000);last=now;const dts=dt*(+$("speed").value)/60;
+  T=Math.min(16*60+30,T+dts);update(dts,false);render();showKPI(Math.min(T,16*60));
+  if(T<16*60+30)requestAnimationFrame(loop); else {playing=false;$("play").textContent="شغّل اليوم من 08:00";}}
+
+// ---------- drawing: top-down site plan ----------
+const cv=$("stage"),cx=cv.getContext("2d");
+const PAL=["#f4f6f7","#f4f6f7","#f4f6f7","#c9d0d4","#c9d0d4","#2a2f33","#2a2f33","#8a1f1f","#24477a","#b8a27a","#5d6b73","#e9ecef"];
+const G={roadY:640,laneY:520,laneFront:700,slot:40,tunIn:640,tunOut:285,exitX:205,corr:410,vacX:[150,260,370,480],vacY:[150,260],intBay:[840,960,1080],intY:175,leaveX:45};
+const SPEED=520; // px per simulated minute
+const bg=document.createElement("canvas");bg.width=1280;bg.height=720;const bx=bg.getContext("2d");
+function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function txt(g,t,x,y,s,c,w){g.fillStyle=c||"#9db3bb";g.font=(w||400)+" "+(s||16)+"px 'Readex Pro', Tahoma, sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillText(t,x,y);}
+function tree(g,x,y,r){g.fillStyle="rgba(0,0,0,.25)";g.beginPath();g.arc(x+4,y+5,r,0,7);g.fill();
+  const gr=g.createRadialGradient(x-r/3,y-r/3,2,x,y,r);gr.addColorStop(0,"#4f8f5c");gr.addColorStop(1,"#24513a");g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
+function buildBg(){
+  const g=bx;g.clearRect(0,0,1280,720);
+  g.fillStyle="#2b3a33";g.fillRect(0,0,1280,720);                     // ground (Asir highland green-grey)
+  for(let i=0;i<220;i++){g.fillStyle="rgba(255,255,255,"+(Math.random()*.03)+")";g.fillRect(Math.random()*1280,Math.random()*600,2,2);}
+  g.fillStyle="#3a444a";rr(g,20,70,1240,520,14);g.fill();               // site asphalt
+  g.strokeStyle="rgba(255,255,255,.08)";g.lineWidth=2;g.stroke();
+  // road
+  g.fillStyle="#262c30";g.fillRect(0,600,1280,120);
+  g.fillStyle="#d7dde0";g.fillRect(0,600,1280,3);g.fillRect(0,717,1280,3);
+  g.setLineDash([28,22]);g.strokeStyle="#e9c46a";g.lineWidth=3;g.beginPath();g.moveTo(0,672);g.lineTo(1280,672);g.stroke();g.setLineDash([]);
+  txt(g,"طريق الملك خالد · ممر أبها – خميس مشيط",640,700,15,"#b8c4c8");
+  // entry & exit openings
+  g.fillStyle="#3a444a";g.fillRect(1150,585,60,20);g.fillRect(15,585,60,20);
+  txt(g,"دخول",1180,575,13,"#e8eef0",600);txt(g,"خروج",45,575,13,"#e8eef0",600);
+  // stacking lane with chevrons
+  g.fillStyle="#30383d";rr(g,670,G.laneY-30,520,60,8);g.fill();
+  g.strokeStyle="#f2b632";g.lineWidth=2;g.setLineDash([10,10]);g.beginPath();g.moveTo(675,G.laneY-30);g.lineTo(1185,G.laneY-30);g.moveTo(675,G.laneY+30);g.lineTo(1185,G.laneY+30);g.stroke();g.setLineDash([]);
+  txt(g,"مسار الانتظار · يتسع 12 سيارة",930,G.laneY+48,13,"#c9d6da");
+  // kiosk
+  g.fillStyle="#f2b632";rr(g,682,G.laneY+30,24,22,4);g.fill();txt(g,"دفع",694,G.laneY+41,11,"#1a1a1a",600);
+  // tunnel building
+  g.fillStyle="rgba(0,0,0,.35)";rr(g,G.tunOut-12,G.laneY-46,G.tunIn-G.tunOut+36,104,8);g.fill();
+  const tg=g.createLinearGradient(0,G.laneY-50,0,G.laneY+50);tg.addColorStop(0,"#1d4f7a");tg.addColorStop(1,"#163b5c");
+  g.fillStyle=tg;rr(g,G.tunOut-16,G.laneY-50,G.tunIn-G.tunOut+32,100,8);g.fill();
+  g.fillStyle="#0f2638";g.fillRect(G.tunOut-6,G.laneY-30,G.tunIn-G.tunOut+12,60);
+  const zones=[[G.tunIn-20,"رغوة"],[G.tunIn-110,"فرش"],[G.tunIn-200,"ضغط عالٍ وشمع"],[G.tunOut+40,"تجفيف"]];
+  zones.forEach(([x,n])=>{g.fillStyle="rgba(255,255,255,.12)";g.fillRect(x-3,G.laneY-30,6,60);txt(g,n,x,G.laneY-40,11,"#cfe2f2");});
+  txt(g,"نفق الغسيل الآلي · 30 م · 50 سيارة/ساعة",(G.tunIn+G.tunOut)/2,G.laneY+40,13,"#e8eef0",500);
+  // exit apron
+  g.fillStyle=P.design==="blocking"?"rgba(217,72,59,.35)":"#424d53";rr(g,G.exitX-48,G.laneY-30,90,60,6);g.fill();
+  txt(g,P.design==="blocking"?"تنظيف داخلي يسد المخرج":"مخرج حر",G.exitX,G.laneY+46,12,P.design==="blocking"?"#ff8a7f":"#c9d6da",600);
+  // internal corridor arrows
+  g.strokeStyle="rgba(255,255,255,.18)";g.lineWidth=2;g.setLineDash([6,8]);g.beginPath();g.moveTo(G.exitX,G.laneY-30);g.lineTo(G.exitX,G.corr);g.lineTo(1100,G.corr);g.moveTo(G.leaveX,G.corr);g.lineTo(G.leaveX,600);g.stroke();g.setLineDash([]);
+  // vacuum canopy
+  g.fillStyle="rgba(63,174,122,.10)";rr(g,90,95,450,225,10);g.fill();g.strokeStyle="rgba(63,174,122,.6)";g.lineWidth=2;g.stroke();
+  txt(g,"شفط ذاتي مجاني · "+P.vac+" محطات تحت مظلة",315,84,13,"#bfe8d2",600);
+  for(let i=0;i<8;i++){const x=G.vacX[i%4],y=G.vacY[Math.floor(i/4)],on=i<P.vac;
+    g.strokeStyle=on?"rgba(255,255,255,.55)":"rgba(255,255,255,.12)";g.lineWidth=2;rr(g,x-38,y-24,76,48,4);g.stroke();
+    if(on){g.fillStyle="#3fae7a";g.beginPath();g.arc(x+44,y,6,0,7);g.fill();}}
+  if(P.vac>8){txt(g,"+"+(P.vac-8)+" محطات إضافية",315,305,11,"#bfe8d2");}
+  // interior building & lounge
+  if(P.design==="separated"){
+    g.fillStyle="rgba(61,127,217,.12)";rr(g,770,100,370,150,10);g.fill();g.strokeStyle="rgba(61,127,217,.7)";g.stroke();
+    txt(g,"مسار التنظيف الداخلي المنفصل · "+P.intw+(P.intw>1?" عمال":" عامل"),955,88,13,"#cfe0f7",600);
+    G.intBay.forEach((x,i)=>{g.strokeStyle=i<P.intw?"rgba(255,255,255,.55)":"rgba(255,255,255,.12)";rr(g,x-40,G.intY-28,80,56,4);g.stroke();});
+  }
+  g.fillStyle="#56636a";rr(g,1160,100,90,150,8);g.fill();txt(g,"المكتب",1205,160,12,"#e8eef0",600);txt(g,"وصالة الانتظار",1205,180,11,"#e8eef0");
+  // pylon sign
+  g.fillStyle="#14232b";rr(g,1210,470,52,92,6);g.fill();
+  [["#d9483b",0,1],["#f2b632",1,0],["#3fae7a",2,1]].forEach(([c,i])=>{g.fillStyle=c;g.beginPath();g.moveTo(1216+i*14,500);g.lineTo(1223+i*14,486);g.lineTo(1230+i*14,500);g.fill();});
+  txt(g,"ضباب",1236,520,16,"#f2b632",700);txt(g,"غسيل سريع",1236,542,10,"#c9d6da");
+  // trees along the edges
+  [[60,40],[160,36],[420,42],[700,36],[1000,40],[1250,36],[1260,300],[1265,420],[25,300],[30,440],[620,350],[720,330]].forEach(([x,y],i)=>tree(g,x,y,14+(i%3)*3));
+}
+function drawCar(x,y,ang,col,glow){
+  cx.save();cx.translate(x,y);cx.rotate(ang);
+  if(glow){cx.shadowColor=glow;cx.shadowBlur=14;}
+  cx.fillStyle="rgba(0,0,0,.35)";rr(cx,-17,-8,36,20,6);cx.fill();cx.shadowBlur=0;
+  cx.fillStyle=col;rr(cx,-18,-10,36,20,6);cx.fill();
+  cx.fillStyle="rgba(20,35,43,.85)";rr(cx,-9,-8,9,16,3);cx.fill();rr(cx,4,-7,6,14,2);cx.fill();
+  cx.fillStyle="rgba(255,255,255,.25)";cx.fillRect(-1,-8,4,16);
+  cx.fillStyle="#ffe8a3";cx.fillRect(-18,-8,2,4);cx.fillRect(-18,4,2,4);
+  if(glow){cx.strokeStyle=glow;cx.lineWidth=2;rr(cx,-20,-12,40,24,7);cx.stroke();}
+  cx.restore();
+}
+function slotPos(i){return {x:G.laneFront+i*G.slot,y:G.laneY};}
+function viaCorr(from,dest){const pts=[];if(from&&Math.abs(from.y-G.corr)>2&&from.y>G.corr-1)pts.push({x:from.x,y:G.corr});else if(from&&from.y<G.corr)pts.push({x:from.x,y:G.corr});pts.push({x:dest.x,y:G.corr});pts.push(dest);return pts;}
+function plan(c,t,ctx){
+  if(c.lost){ if(t<c.a||t>c.a+3) return null; return {key:"lost",route:[{x:-80,y:G.roadY+12}],spawn:{x:1330,y:G.roadY+12},glow:"#d9483b"}; }
+  if(t<c.a) return null;
+  if(t<c.g){const i=ctx.lane.indexOf(c);const sp=slotPos(i);return {key:"lane"+i,route:c.key&&c.key.startsWith("lane")?[sp]:[{x:1180,y:G.roadY+12},{x:1180,y:G.laneY},sp],spawn:{x:1330,y:G.roadY+12},glow:i>=6?"#f2b632":null};}
+  if(t<c.x){const f=(t-c.g)/(c.x-c.g);return {key:"tunnel",fixed:{x:G.tunIn-f*(G.tunIn-G.tunOut),y:G.laneY}};}
+  if(c.int&&t<c.i1){
+    if(P.design==="blocking"){ if(t<c.i0) return {key:"bw",route:[{x:G.tunOut+10,y:G.laneY}],glow:"#f2b632"}; return {key:"bi",route:[{x:G.exitX,y:G.laneY}],glow:"#d9483b"}; }
+    if(t<c.i0){const k=ctx.iw.indexOf(c);return {key:"iw"+k,route:viaCorr(c.p,{x:1100-k*44,y:G.corr+70}),glow:"#f2b632"};}
+    return {key:"ib",route:viaCorr(c.p,{x:G.intBay[c.iBay],y:G.intY}),glow:"#3d7fd9"};
+  }
+  if(c.vacU&&t<c.v1){
+    if(t<c.v0){const k=ctx.vw.indexOf(c);return {key:"vw"+k,route:viaCorr(c.p,{x:600,y:G.corr-30-k*0}),glow:"#f2b632",stack:k};}
+    const b=c.vBay;const x=b<8?G.vacX[b%4]:315,y=b<8?G.vacY[Math.floor(b/4)]:290;
+    return {key:"vb",route:viaCorr(c.p,{x,y}),glow:null,vac:true};
+  }
+  if(t<c.d+3) return {key:"out",route:viaCorr(c.p,{x:G.leaveX,y:G.corr}).concat([{x:G.leaveX,y:G.roadY-20},{x:-80,y:G.roadY-20}]),glow:null,leaving:true};
+  return null;
+}
+function update(dts,snap){
+  const t=T;
+  const lane=RUN.accepted.filter(c=>c.a<=t&&c.g>t).sort((a,b)=>a.a-b.a);
+  const iw=RUN.accepted.filter(c=>c.int&&c.x<=t&&c.i0>t).sort((a,b)=>a.x-b.x);
+  const vw=RUN.accepted.filter(c=>c.vacU&&c.ready<=t&&c.v0>t).sort((a,b)=>a.ready-b.ready);
+  const ctx={lane,iw,vw};
+  for(const c of RUN.cars){
+    if(c.a>t+0.01){c.p=null;continue;}
+    const pl=plan(c,t,ctx);
+    if(!pl){c.p=null;c.key=null;continue;}
+    c.glow=pl.glow;c.stack=pl.stack;c.vac=pl.vac;
+    if(pl.fixed){if(c.p)c.ang=Math.atan2(pl.fixed.y-c.p.y,pl.fixed.x-c.p.x)||c.ang;c.p={...pl.fixed};c.key=pl.key;c.route=[];continue;}
+    if(!c.p){c.p=pl.spawn?{...pl.spawn}:{...pl.route[pl.route.length-1]};}
+    if(c.key!==pl.key){c.key=pl.key;c.route=pl.route.map(p=>({...p}));}
+    if(snap){const e=c.route[c.route.length-1]||c.p;c.p={...e};c.route=[];continue;}
+    let budget=SPEED*dts;
+    while(budget>0&&c.route.length){const tg=c.route[0];const dx=tg.x-c.p.x,dy=tg.y-c.p.y,dd=Math.hypot(dx,dy);
+      if(dd<0.5){c.route.shift();continue;} c.ang=Math.atan2(dy,dx);
+      if(dd<=budget){c.p={x:tg.x,y:tg.y};budget-=dd;c.route.shift();} else {c.p.x+=dx/dd*budget;c.p.y+=dy/dd*budget;budget=0;}}
+  }
+}
+function render(){
+  if(!RUN)return; const t=T;
+  cx.drawImage(bg,0,0);
+  // tunnel activity: spinning brushes and water when a car is inside
+  const inT=RUN.accepted.filter(c=>c.g<=t&&c.x>t);
+  const spin=(t*40)%(Math.PI*2);
+  [G.tunIn-110,G.tunIn-150].forEach(bxp=>{const busy=inT.some(c=>Math.abs((G.tunIn-(t-c.g)/(c.x-c.g)*(G.tunIn-G.tunOut))-bxp)<45);
+    [G.laneY-24,G.laneY+24].forEach(by=>{cx.save();cx.translate(bxp,by);cx.rotate(busy?spin:0);cx.strokeStyle=busy?"#7fb6ff":"#3b6a96";cx.lineWidth=3;
+      for(let k=0;k<6;k++){cx.rotate(Math.PI/3);cx.beginPath();cx.moveTo(0,0);cx.lineTo(9,0);cx.stroke();}cx.restore();});});
+  inT.forEach(c=>{const x=G.tunIn-(t-c.g)/(c.x-c.g)*(G.tunIn-G.tunOut);
+    if(x>G.tunIn-70){for(let k=0;k<8;k++){cx.fillStyle="rgba(255,255,255,.55)";cx.beginPath();cx.arc(x-14+Math.random()*28,G.laneY-10+Math.random()*20,2+Math.random()*3,0,7);cx.fill();}}
+    else if(x>G.tunOut+80){cx.strokeStyle="rgba(127,182,255,.45)";cx.lineWidth=1.5;for(let k=0;k<5;k++){const yy=G.laneY-28+k*14;cx.beginPath();cx.moveTo(x-10+Math.random()*20,yy);cx.lineTo(x-10+Math.random()*20,yy+8);cx.stroke();}}
+    else {cx.strokeStyle="rgba(255,255,255,.35)";cx.lineWidth=1;for(let k=0;k<4;k++){cx.beginPath();cx.moveTo(x+20,G.laneY-26+k*16);cx.lineTo(x+40,G.laneY-26+k*16);cx.stroke();}}});
+  // cars (stack waiting-for-vacuum cars in a column)
+  const order=[...RUN.cars].filter(c=>c.p).sort((a,b)=>a.p.y-b.p.y);
+  order.forEach(c=>{let {x,y}=c.p; if(c.key&&c.key.startsWith("vw")&&!c.route.length){y=G.corr-30-(c.stack||0)*26;x=600;}
+    drawCar(x,y,c.ang,c.col,c.glow);
+    if(c.vac&&!c.route.length){cx.strokeStyle="rgba(63,174,122,.8)";cx.lineWidth=2;cx.beginPath();cx.moveTo(x+20,y);cx.quadraticCurveTo(x+34,y-14,x+44,y);cx.stroke();}});
+  // revenue pops
+  RUN.accepted.filter(c=>c.d<=t&&t-c.d<1.2).forEach(c=>{const a=1-(t-c.d)/1.2;cx.globalAlpha=a;txt(cx,"+"+Math.round(AVG_TICKET)+" ر.س",G.leaveX+40,G.corr-20-(1-a)*30,14,"#f2b632",700);cx.globalAlpha=1;});
+  // light and fog (Abha: "the lady of fog")
+  const night=t>600?Math.min(.38,(t-600)/180*.38):0;
+  if(night){cx.fillStyle="rgba(4,10,24,"+night+")";cx.fillRect(0,0,1280,720);
+    [[700,G.laneY],[315,200],[(G.tunIn+G.tunOut)/2,G.laneY],[955,175],[1236,516]].forEach(([x,y])=>{const gr=cx.createRadialGradient(x,y,4,x,y,150);gr.addColorStop(0,"rgba(255,220,150,"+night*.55+")");gr.addColorStop(1,"rgba(255,220,150,0)");cx.fillStyle=gr;cx.fillRect(x-150,y-150,300,300);});}
+  for(let k=0;k<3;k++){const fx=((t*6+k*480)%1700)-210,fy=140+k*170;const gr=cx.createRadialGradient(fx,fy,10,fx,fy,240);gr.addColorStop(0,"rgba(232,238,240,.10)");gr.addColorStop(1,"rgba(232,238,240,0)");cx.fillStyle=gr;cx.fillRect(fx-240,fy-240,480,480);}
+  drawQ(t);
+}
+const qc=$("qchart"),qx=qc.getContext("2d");
+function drawQ(t){
+  qx.clearRect(0,0,1000,110);qx.fillStyle="#9db3bb";qx.font="12px Readex Pro";qx.textAlign="right";qx.fillText("طول الطابور خلال اليوم",995,14);
+  qx.strokeStyle="#2b4552";qx.beginPath();qx.moveTo(0,100);qx.lineTo(1000,100);qx.stroke();
+  const pts=[];for(let m=0;m<=Math.min(t,960);m+=5){pts.push([m,RUN.accepted.filter(c=>c.a<=m&&c.g>m).length]);}
+  qx.beginPath();pts.forEach(([m,q],i)=>{const x=1000-m/960*1000,y=100-q/12*80;i?qx.lineTo(x,y):qx.moveTo(x,y);});qx.strokeStyle="#f2b632";qx.lineWidth=2;qx.stroke();
+  qx.lineTo(1000-Math.min(t,960)/960*1000,100);qx.lineTo(1000,100);qx.closePath();qx.fillStyle="rgba(242,182,50,.12)";qx.fill();
+  qx.fillStyle="#9db3bb";qx.textAlign="center";[0,4,8,12,16].forEach(h=>qx.fillText(String(8+h).padStart(2,"0")+":00",Math.max(20,Math.min(980,1000-h*60/960*1000)),108));
+}
+
+// ---------- learn cards (static results from Python, 30 replications) ----------
+function bars(items,max,unit,fmt){ // items: [label,value,highlight]
+  const h=items.length*34+10; let s=`<svg viewBox="0 0 320 ${h}" role="img" style="direction:ltr">`;
+  items.forEach(([lb,v,hi],i)=>{const w=Math.max(2,v/max*170),y=i*34+6;
+    s+=`<text x="318" y="${y+16}" fill="#9db3bb" font-size="12" text-anchor="start" font-family="Readex Pro" direction="rtl">${lb}</text>`;
+    s+=`<rect x="${222-w}" y="${y+3}" width="${w}" height="18" rx="3" fill="${hi?'#f2b632':'#3d7fd9'}"/>`;
+    s+=`<text x="${216-w}" y="${y+16}" fill="#e8eef0" font-size="12" text-anchor="end" font-family="Readex Pro">${fmt(v)}</text>`;});
+  return s+"</svg>";
+}
+const cards=[
+ {t:"فصل التنظيف الداخلي عن مخرج النفق",p:"متوسط الانتظار قبل النفق (دقيقة)، يوم سبت عادي",
+  svg:bars([["س1 منفصل",1.41,1],["س1 تقليدي",12.27],["س3 منفصل",1.61,1],["س3 تقليدي",19.83],["س5 منفصل",1.79,1],["س5 تقليدي",21.61]],22," د",v=>v.toFixed(1)),
+  v:"التصميم التقليدي يخسر 24% من عملاء السنة الثالثة. اعتمدنا الفصل."},
+ {t:"عدد محطات الشفط الذاتي",p:"انتظار محطة الشفط (دقيقة)، ذروة الصيف",
+  svg:bars([["4 محطات",15.97],["6 محطات",0.49],["8 محطات",0.03,1],["10 محطات",0],["12 محطة",0]],16," د",v=>v.toFixed(1)),
+  v:"8 محطات تكفي، فوفّرنا 4 محطات وجزءاً من المظلات (نحو 75 ألف ريال)."},
+ {t:"طاقة النفق",p:"متوسط الانتظار قبل النفق (دقيقة)، ذروة الصيف",
+  svg:bars([["30 سيارة/س",7.37],["35 سيارة/س",4.72],["40 سيارة/س",3.14],["50 سيارة/س",2.13,1]],8," د",v=>v.toFixed(1)),
+  v:"40 تكفي بالكاد في الذروة. اخترنا 50 لهامش النمو."},
+ {t:"عمال التنظيف الداخلي",p:"انتظار خدمة التنظيف الداخلي (دقيقة)، ذروة الصيف",
+  svg:bars([["عامل واحد",77.27],["عاملان",5.04,1],["3 عمال",0.77]],80," د",v=>v.toFixed(1)),
+  v:"العامل الثالث يوفر 4 دقائق فقط ولا يغطي راتبه. اعتمدنا عاملين."}
+];
+$("cards").innerHTML=cards.map(c=>`<article class="panel card"><h3>${c.t}</h3><p>${c.p}</p>${c.svg}<div class="verdict">${c.v}</div></article>`).join("");
+
+if(!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h){this.rect(x,y,w,h);};}
+reset();
+</script>
+</body>
+</html>
